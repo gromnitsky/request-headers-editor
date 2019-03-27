@@ -1,11 +1,15 @@
 /* global iniReader */
 import match_patterns from './match-patterns.js'
 
-function main() {
-    guess_storage_engine()
+function main(first_time = true) {
+    let r = guess_storage_engine()
 	.then(options)
 	.then( r => ini_parse(r.ini))
-	.then(listeners_add)
+	.then(mk_listener_callback)
+
+    if (first_time) r = r.then(storage_hooks)
+
+    r.then(listener_add)
 }
 
 function guess_storage_engine() {
@@ -44,17 +48,13 @@ function ini_parse(str) {
     return parser.getBlock()
 }
 
-function listeners_add(conf) {
+function mk_listener_callback(conf) {
     let urls = Object.keys(conf)
-    let fixer = details => fix(details, conf, urls.map(match_patterns))
-
-    chrome.webRequest.onBeforeSendHeaders
-	.addListener(fixer, { urls },
-		     ["blocking", "requestHeaders", "extraHeaders"])
-    return fixer		// used by listeners_rm()
+    let callback = details => modify_headers(details, conf, urls.map(match_patterns))
+    return {urls, callback}
 }
 
-function fix(details, conf, pathern_matchers) {
+function modify_headers(details, conf, pathern_matchers) {
     let headers = pattern_find(conf, pathern_matchers, details.url)
     Object.keys(headers).forEach( name => {
 	header_fix(details, name, headers[name])
@@ -75,6 +75,22 @@ function header_fix(details, name, value) {
     let cmp = (a, b) => a.toLowerCase() === b.toLowerCase()
     let hdr = details.requestHeaders.find( hdr => cmp(hdr.name, name))
     hdr ? hdr.value = value : details.requestHeaders.push({ name, value })
+}
+
+function storage_hooks(listener) {
+    chrome.storage.onChanged.addListener( () => { // reread options
+	console.log('onBeforeSendHeaders.removeListener')
+	chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback)
+	main(false)
+    })
+    return listener
+}
+
+function listener_add(listener) {
+    console.log('onBeforeSendHeaders.addListener', listener.urls)
+    chrome.webRequest.onBeforeSendHeaders
+	.addListener(listener.callback, { urls: listener.urls },
+		     ["blocking", "requestHeaders", "extraHeaders"])
 }
 
 
