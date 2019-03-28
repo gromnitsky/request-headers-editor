@@ -28,7 +28,7 @@ function modify_headers(details, conf, pathern_matchers) {
 	header_fix(details, name, headers[name])
     })
 
-    console.log(details.url, headers)
+//    console.log(details.url, headers)
     return { requestHeaders: details.requestHeaders }
 }
 
