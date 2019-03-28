@@ -15,14 +15,23 @@ export function engine() {
 export function get(storage) {
     return new Promise( (res, rej) => {
 	storage.get(null, data => {
-	    if (!data.ini) data.ini = `# hello
+	    if (!data.ini) data.ini = `# Each section corresponds to a domain pattern
+# (see https://developer.chrome.com/extensions/match_patterns).
+#
+# Each key-value pair corresponds to a header name & a value.
+# If the value is empty, the header is removed from the request.
 
 [*://*.wsj.com/*]
 referer = https://www.facebook.com
+# for some reason, wsj doesn't like usual browser agent names
 user-agent = curl/7.61.1
 
 [*://*.ft.com/*]
 referer = https://news.google.com
+
+# just for fun: switch google to a 'lightweight' mode
+#[*://*.google.com/*]
+#user-agent = omglol/1.2.3
 `
 	    chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(data)
 	})

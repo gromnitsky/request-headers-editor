@@ -17,12 +17,13 @@ class App {
 
 	this.node_save.onclick = this.save.bind(this)
 	this.node_reset.onclick = this.reset.bind(this)
-
-	this.node_save.disabled = true
     }
 
     textarea_update() {
-	storage.get(this.st).then( data => this.node_textarea.value = data.ini)
+	storage.get(this.st).then( data => {
+	    this.node_textarea.value = data.ini
+	    this.node_save.disabled = true
+	})
     }
 
     save() {
