@@ -9,7 +9,9 @@ instead of analysing each request.
 
 Uber-useful for getting around paywalls.
 
-![The options page screenshot](https://ultraimg.com/images/2019/03/28/ZHdD.png)
+The options page is actually a simple ini-config editor:
+
+![](https://ultraimg.com/images/2019/03/28/ZHdD.png)
 
 ## Compilation
 
@@ -18,7 +20,7 @@ $ npm i
 $ make crx
 ~~~
 
-The resuld should be in `_out` dir.
+The result should be in `_out` dir.
 
 ## License
 
