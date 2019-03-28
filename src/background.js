@@ -56,8 +56,10 @@ function mk_listener_callback(conf) {
 		chrome.browserAction.setBadgeText({text: '1+', tabId: tab.id})
 	}
     }
+    let r = {urls, pathern_matchers, callback}
+    callback.storage = (_changes, _areaName) => storage_hook(r)
 
-    return {urls, pathern_matchers, callback}
+    return r
 }
 
 function modify_headers(details, conf, pathern_matchers) {
@@ -84,9 +86,8 @@ function header_fix(details, name, value) {
 }
 
 function listener_add(listener) {
-    let hook = (_changes, _areaName) => storage_hook(hook, listener)
     console.log('storage.onChanged.addListener', listener.urls)
-    chrome.storage.onChanged.addListener(hook)
+    chrome.storage.onChanged.addListener(listener.callback.storage)
 
     if (!listener.urls.length) {
 	console.log('listener_add', 'no patterns to hook on')
@@ -102,9 +103,9 @@ function listener_add(listener) {
     chrome.tabs.onUpdated.addListener(listener.callback.tabs)
 }
 
-function storage_hook(prev_hook, listener) {
+function storage_hook(listener) {
     console.log('storage.onChanged.removeListener', listener.urls)
-    chrome.storage.onChanged.removeListener(prev_hook)
+    chrome.storage.onChanged.removeListener(listener.callback.storage)
 
     console.log('onBeforeSendHeaders.removeListener')
     chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback.headers)
