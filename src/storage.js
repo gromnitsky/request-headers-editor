@@ -39,3 +39,19 @@ export function ini_parse(str) {
     parser.load(str)
     return parser.getBlock()
 }
+
+export function clear(storage) {
+    return new Promise( (res, rej) => {
+	storage.clear( () => {
+	    chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(true)
+	})
+    })
+}
+
+export function save(storage, val) {
+    return new Promise( (res, rej) => {
+	storage.set({ini: val}, () => {
+	    chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(val)
+	})
+    })
+}
