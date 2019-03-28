@@ -1,48 +1,8 @@
-/* global iniReader */
 import match_patterns from './match-patterns.js'
+import * as storage from './storage.js'
 
 function main() {
-    guess_storage_engine()
-	.then(options)
-	.then( r => ini_parse(r.ini))
-	.then(hooks_make)
-	.then(hooks_add)
-}
-
-function guess_storage_engine() {
-    return new Promise( (resolve, _) => {
-	chrome.management.getSelf( info => {
-	    resolve(chrome.storage[info.installType === 'development' ? 'local' : 'sync'])
-	})
-    })
-}
-
-function options(storage) {
-    return new Promise( (res, rej) => {
-	storage.get(null, data => {
-	    if (!data.ini) data.ini = `# hello
-
-[*://*.wsj.com/*]
-referer = https://www.facebook.com
-user-agent = curl/7.61.1
-
-[*://*.ft.com/*]
-referer = https://news.google.com
-`
-	    chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(data)
-	})
-    })
-}
-
-function ini_parse(str) {
-    let parser = new iniReader.IniReader()
-    parser.load = function(s) { // a monkey patch
-        this.lines = s.split("\n").filter(Boolean)
-        this.values = this.parseFile()
-        this.emit('fileParse')
-    }
-    parser.load(str)
-    return parser.getBlock()
+    storage.parse().then(hooks_make).then(hooks_add)
 }
 
 function hooks_make(conf) {
