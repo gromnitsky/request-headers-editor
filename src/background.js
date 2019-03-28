@@ -7,7 +7,7 @@ function main(first_time = true) {
 	.then( r => ini_parse(r.ini))
 	.then(mk_listener_callback)
 
-    if (first_time) r = r.then(storage_hooks)
+    if (first_time) r.then(hooks_set)
 
     r.then(listener_add)
 }
@@ -77,13 +77,18 @@ function header_fix(details, name, value) {
     hdr ? hdr.value = value : details.requestHeaders.push({ name, value })
 }
 
-function storage_hooks(listener) {
+function hooks_set(listener) {
+    chrome.tabs.onUpdated.addListener( (tabId, changeInfo, tab) => {
+	if (!changeInfo.url) return
+	if (listener.urls.some(pattern => match_patterns(pattern, tab.url)))
+	    chrome.browserAction.setBadgeText({text: '*', tabId: tab.id})
+    })
+
     chrome.storage.onChanged.addListener( () => { // reread options
 	console.log('onBeforeSendHeaders.removeListener')
 	chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback)
 	main(false)
     })
-    return listener
 }
 
 function listener_add(listener) {
