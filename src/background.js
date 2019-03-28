@@ -84,17 +84,22 @@ function header_fix(details, name, value) {
 }
 
 function listener_add(listener) {
-    console.log('onBeforeSendHeaders.addListener', listener.urls)
+    let hook = (_changes, _areaName) => storage_hook(hook, listener)
+    console.log('storage.onChanged.addListener', listener.urls)
+    chrome.storage.onChanged.addListener(hook)
+
+    if (!listener.urls.length) {
+	console.log('listener_add', 'no patterns to hook on')
+	return
+    }
+
+    console.log('onBeforeSendHeaders.addListener')
     chrome.webRequest.onBeforeSendHeaders
 	.addListener(listener.callback.headers, { urls: listener.urls },
 		     ["blocking", "requestHeaders", "extraHeaders"])
 
     console.log('tabs.onUpdated.addListener')
     chrome.tabs.onUpdated.addListener(listener.callback.tabs)
-
-    let hook = (_changes, _areaName) => storage_hook(hook, listener)
-    console.log('storage.onChanged.addListener')
-    chrome.storage.onChanged.addListener(hook)
 }
 
 function storage_hook(prev_hook, listener) {
