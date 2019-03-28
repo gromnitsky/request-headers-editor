@@ -1,15 +1,12 @@
 /* global iniReader */
 import match_patterns from './match-patterns.js'
 
-function main(first_time = true) {
-    let r = guess_storage_engine()
+function main() {
+    guess_storage_engine()
 	.then(options)
 	.then( r => ini_parse(r.ini))
 	.then(mk_listener_callback)
-
-    if (first_time) r.then(hooks_set)
-
-    r.then(listener_add)
+	.then(listener_add)
 }
 
 function guess_storage_engine() {
@@ -86,18 +83,6 @@ function header_fix(details, name, value) {
     hdr ? hdr.value = value : details.requestHeaders.push({ name, value })
 }
 
-function hooks_set(listener) {
-    chrome.storage.onChanged.addListener( () => { // reread options
-	console.log('onBeforeSendHeaders.removeListener')
-	chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback.headers)
-
-	console.log('tabs.onUpdated.removeListener')
-	chrome.tabs.onUpdated.removeListener(listener.callback.tabs)
-
-	main(false)
-    })
-}
-
 function listener_add(listener) {
     console.log('onBeforeSendHeaders.addListener', listener.urls)
     chrome.webRequest.onBeforeSendHeaders
@@ -106,6 +91,23 @@ function listener_add(listener) {
 
     console.log('tabs.onUpdated.addListener')
     chrome.tabs.onUpdated.addListener(listener.callback.tabs)
+
+    let hook = (_changes, _areaName) => storage_hook(hook, listener)
+    console.log('storage.onChanged.addListener')
+    chrome.storage.onChanged.addListener(hook)
+}
+
+function storage_hook(prev_hook, listener) {
+    console.log('storage.onChanged.removeListener', listener.urls)
+    chrome.storage.onChanged.removeListener(prev_hook)
+
+    console.log('onBeforeSendHeaders.removeListener')
+    chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback.headers)
+
+    console.log('tabs.onUpdated.removeListener')
+    chrome.tabs.onUpdated.removeListener(listener.callback.tabs)
+
+    main()
 }
 
 
