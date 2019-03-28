@@ -1,6 +1,6 @@
 out := _out
 ext := $(out)/ext
-crx := $(shell json -d- -a name version < src/manifest.json).crx
+crx := $(shell json -d- -a name version < src/manifest.json | tr ' ' -).crx
 
 compile:
 compile.all :=
@@ -36,3 +36,6 @@ cp $< $@
 endef
 
 compile: $(compile.all)
+
+upload: $(out)/$(crx)
+	scp $< gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/
