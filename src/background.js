@@ -50,8 +50,17 @@ function ini_parse(str) {
 
 function mk_listener_callback(conf) {
     let urls = Object.keys(conf)
-    let callback = details => modify_headers(details, conf, urls.map(match_patterns))
-    return {urls, callback}
+    let pathern_matchers = urls.map(match_patterns)
+
+    let callback = {
+	headers: details => modify_headers(details, conf, pathern_matchers),
+	tabs: (tabId, changeInfo, tab) => {
+	    if (changeInfo.url && pathern_matchers.some( pm => pm(tab.url)))
+		chrome.browserAction.setBadgeText({text: '1+', tabId: tab.id})
+	}
+    }
+
+    return {urls, pathern_matchers, callback}
 }
 
 function modify_headers(details, conf, pathern_matchers) {
@@ -78,15 +87,13 @@ function header_fix(details, name, value) {
 }
 
 function hooks_set(listener) {
-    chrome.tabs.onUpdated.addListener( (tabId, changeInfo, tab) => {
-	if (!changeInfo.url) return
-	if (listener.urls.some(pattern => match_patterns(pattern, tab.url)))
-	    chrome.browserAction.setBadgeText({text: '*', tabId: tab.id})
-    })
-
     chrome.storage.onChanged.addListener( () => { // reread options
 	console.log('onBeforeSendHeaders.removeListener')
-	chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback)
+	chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback.headers)
+
+	console.log('tabs.onUpdated.removeListener')
+	chrome.tabs.onUpdated.removeListener(listener.callback.tabs)
+
 	main(false)
     })
 }
@@ -94,8 +101,11 @@ function hooks_set(listener) {
 function listener_add(listener) {
     console.log('onBeforeSendHeaders.addListener', listener.urls)
     chrome.webRequest.onBeforeSendHeaders
-	.addListener(listener.callback, { urls: listener.urls },
+	.addListener(listener.callback.headers, { urls: listener.urls },
 		     ["blocking", "requestHeaders", "extraHeaders"])
+
+    console.log('tabs.onUpdated.addListener')
+    chrome.tabs.onUpdated.addListener(listener.callback.tabs)
 }
 
 
