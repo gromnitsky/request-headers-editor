@@ -5,8 +5,8 @@ function main() {
     guess_storage_engine()
 	.then(options)
 	.then( r => ini_parse(r.ini))
-	.then(mk_listener_callback)
-	.then(listener_add)
+	.then(hooks_make)
+	.then(hooks_add)
 }
 
 function guess_storage_engine() {
@@ -45,7 +45,7 @@ function ini_parse(str) {
     return parser.getBlock()
 }
 
-function mk_listener_callback(conf) {
+function hooks_make(conf) {
     let urls = Object.keys(conf)
     let pathern_matchers = urls.map(match_patterns)
 
@@ -57,7 +57,7 @@ function mk_listener_callback(conf) {
 	}
     }
     let r = {urls, pathern_matchers, callback}
-    callback.storage = (_changes, _areaName) => storage_hook(r)
+    callback.storage = (_changes, _areaName) => hooks_rm(r)
 
     return r
 }
@@ -85,32 +85,22 @@ function header_fix(details, name, value) {
     hdr ? hdr.value = value : details.requestHeaders.push({ name, value })
 }
 
-function listener_add(listener) {
-    console.log('storage.onChanged.addListener', listener.urls)
+function hooks_add(listener) {
+    console.log('hooks add', listener.urls)
     chrome.storage.onChanged.addListener(listener.callback.storage)
 
-    if (!listener.urls.length) {
-	console.log('listener_add', 'no patterns to hook on')
-	return
-    }
+    if (!listener.urls.length) return
 
-    console.log('onBeforeSendHeaders.addListener')
     chrome.webRequest.onBeforeSendHeaders
 	.addListener(listener.callback.headers, { urls: listener.urls },
 		     ["blocking", "requestHeaders", "extraHeaders"])
-
-    console.log('tabs.onUpdated.addListener')
     chrome.tabs.onUpdated.addListener(listener.callback.tabs)
 }
 
-function storage_hook(listener) {
-    console.log('storage.onChanged.removeListener', listener.urls)
+function hooks_rm(listener) {
+    console.log('hooks rm', listener.urls)
     chrome.storage.onChanged.removeListener(listener.callback.storage)
-
-    console.log('onBeforeSendHeaders.removeListener')
     chrome.webRequest.onBeforeSendHeaders.removeListener(listener.callback.headers)
-
-    console.log('tabs.onUpdated.removeListener')
     chrome.tabs.onUpdated.removeListener(listener.callback.tabs)
 
     main()
