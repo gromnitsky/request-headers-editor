@@ -41,8 +41,12 @@ function pattern_find(conf, pathern_matchers, url) { // early exit
 
 function header_fix(details, name, value) {
     let cmp = (a, b) => a.toLowerCase() === b.toLowerCase()
-    let hdr = details.requestHeaders.find( hdr => cmp(hdr.name, name))
-    hdr ? hdr.value = value : details.requestHeaders.push({ name, value })
+    let hdr = details.requestHeaders
+    let idx = hdr.findIndex( h => cmp(h.name, name))
+    if (-1 === idx)
+	hdr.push({ name, value })
+    else
+	value ? hdr[idx].value = value : hdr.splice(idx, 1)
 }
 
 function hooks_add(listener) {
