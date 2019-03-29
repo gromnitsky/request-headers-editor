@@ -1,6 +1,8 @@
 out := _out
 ext := $(out)/ext
-crx := $(shell json -d- -a name version < src/manifest.json | tr ' ' -).crx
+pkg := $(out)/$(shell json -d- -a name version < src/manifest.json | tr ' ' -)
+crx := $(pkg).crx
+zip := $(pkg).zip
 
 compile:
 compile.all :=
@@ -22,13 +24,17 @@ compile.all += $(ext)/inireader.js
 
 
 
-crx: $(out)/$(crx)
-$(out)/$(crx): private.pem $(compile.all)
+crx: $(crx)
+$(crx): private.pem $(compile.all)
 	google-chrome --pack-extension=$(out)/ext --pack-extension-key=$<
 	mv $(out)/ext.crx $@
 
 private.pem:
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out $@
+
+zip: $(zip)
+$(zip): private.pem $(compile.all)
+	cd $(ext) && zip -qr $(CURDIR)/$@ *
 
 define copy =
 @mkdir -p $(dir $@)
@@ -37,5 +43,5 @@ endef
 
 compile: $(compile.all)
 
-upload: $(out)/$(crx)
+upload: $(crx)
 	scp $< gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/
