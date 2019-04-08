@@ -1,4 +1,4 @@
-import match_patterns from './match-patterns.js'
+/* global UrlMatch */
 import * as storage from './storage.js'
 
 function main() {
@@ -7,12 +7,12 @@ function main() {
 
 function hooks_make(conf) {
     let urls = Object.keys(conf)
-    let pathern_matchers = urls.map(match_patterns)
+    let pathern_matchers = urls.map( v => new UrlMatch.default(v))
 
     let callback = {
 	headers: details => modify_headers(details, conf, pathern_matchers),
 	tabs: (tabId, changeInfo, tab) => {
-	    if (changeInfo.url && pathern_matchers.some( pm => pm(tab.url)))
+	    if (changeInfo.url && pathern_matchers.some( m => m.test(tab.url)))
 		chrome.browserAction.setBadgeText({text: '1+', tabId: tab.id})
 	}
     }
@@ -35,7 +35,7 @@ function modify_headers(details, conf, pathern_matchers) {
 function pattern_find(conf, pathern_matchers, url) { // early exit
     let patterns = Object.keys(conf)
     for (let idx in pathern_matchers) {
-	if (pathern_matchers[idx](url)) return conf[patterns[idx]]
+	if (pathern_matchers[idx].test(url)) return conf[patterns[idx]]
     }
 }
 

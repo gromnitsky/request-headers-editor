@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@fczbkk/url-match": "~3.3.5",
     "inireader": "~1.2.1"
   }
 }

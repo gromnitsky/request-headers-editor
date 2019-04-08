@@ -20,7 +20,11 @@ $(ext)/%: src/%; $(copy)
 $(ext)/inireader.js: node_modules/inireader/index.js
 	browserify -s iniReader $< > $@
 
-compile.all += $(ext)/inireader.js
+vendor.src := @fczbkk/url-match/docs/url-match.js
+vendor.dest := $(addprefix $(ext)/vendor/, $(vendor.src))
+$(ext)/vendor/%: node_modules/%; $(copy)
+
+compile.all += $(ext)/inireader.js $(vendor.dest)
 
 
 
