@@ -55,9 +55,11 @@ function hooks_add(listener) {
 
     if (!listener.urls.length) return
 
+    let opt = ["blocking", "requestHeaders"]
+    if (!is_firefox) opt.push("extraHeaders")
+
     chrome.webRequest.onBeforeSendHeaders
-	.addListener(listener.callback.headers, { urls: listener.urls },
-		     ["blocking", "requestHeaders", "extraHeaders"])
+        .addListener(listener.callback.headers, { urls: listener.urls }, opt)
     chrome.tabs.onUpdated.addListener(listener.callback.tabs)
 }
 
@@ -70,5 +72,6 @@ function hooks_rm(listener) {
     main()
 }
 
+function is_firefox() { return typeof browser !== "undefined" }
 
 main()
