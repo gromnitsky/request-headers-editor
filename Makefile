@@ -9,7 +9,7 @@ compile.all :=
 
 
 
-static.src  := $(shell find src -type f -name '*.js' -or -name '*.html' -or -name '*.png' -or -name '*.json')
+static.src  := $(wildcard src/*)
 static.dest := $(patsubst src/%, $(ext)/%, $(static.src))
 compile.all += $(static.dest)
 
@@ -20,24 +20,23 @@ $(ext)/%: src/%; $(copy)
 $(ext)/inireader.js: node_modules/inireader/index.js
 	browserify -s iniReader $< > $@
 
-vendor.src := @fczbkk/url-match/docs/url-match.js
-vendor.dest := $(addprefix $(ext)/vendor/, $(vendor.src))
-$(ext)/vendor/%: node_modules/%; $(copy)
+vendor.src := $(shell adieu -pe '$$("link,script").map((_,e) => $$(e).attr("href") || $$(e).attr("src")).get().filter(v => /node_modules/.test(v)).join`\n`' src/background.html)
+vendor.dest := $(addprefix $(ext)/, $(vendor.src))
+$(ext)/node_modules/%: node_modules/%; $(copy)
 
 compile.all += $(ext)/inireader.js $(vendor.dest)
 
 
 
 crx: $(crx)
-$(crx): private.pem $(compile.all)
-	google-chrome --pack-extension=$(out)/ext --pack-extension-key=$<
-	mv $(out)/ext.crx $@
+%.crx: %.zip private.pem
+	crx3-new private.pem < $< > $@
 
 private.pem:
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out $@
 
 zip: $(zip)
-$(zip): private.pem $(compile.all)
+$(zip): $(compile.all)
 	cd $(ext) && zip -qr $(CURDIR)/$@ *
 
 define copy =
