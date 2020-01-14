@@ -21,10 +21,6 @@ export function get(storage) {
 # Each key-value pair corresponds to a header name & a value.
 # If the value is empty, the header is removed from the request.
 
-#[*://*.wsj.com/*]
-#referer = https://www.facebook.com
-#user-agent = curl/7.61.1
-
 #[*://*.ft.com/*]
 #referer = https://news.google.com
 
