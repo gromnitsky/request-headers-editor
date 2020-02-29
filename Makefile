@@ -48,3 +48,4 @@ compile: $(compile.all)
 
 upload: $(crx)
 	scp $< gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/
+	rsync -avPL --delete -e ssh test/ gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/request-headers-editor

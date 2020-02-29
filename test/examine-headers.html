@@ -1,0 +1,28 @@
+<!doctype html>
+<title>Examine Headers</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  #headers { margin-top: 1em; }
+  table { border-collapse: collapse; }
+  table, th, td { border: 1px solid lightgray; padding: 5px; }
+  th:first-child { width: 35%; }
+  td { overflow-wrap: anywhere; }
+  body { max-width: 600px; margin: 8px auto; padding: 0 8px; }
+  pre { overflow-wrap: anywhere; white-space: pre-wrap; }
+</style>
+
+<p>
+  Add this snippet to <a href='https://github.com/gromnitsky/request-headers-editor'>request-headers-editor</a> options page & press the button below. If the extension has been installed correctly, the <code>referer</code> header in the table should have <code>12345</code> value.
+</p>
+
+<pre>
+[*://gromnitsky.users.sourceforge.net/js/request-headers-editor/*]
+referer = 12345
+</pre>
+
+<button>Get Headers</button>
+
+<div id="headers"></div>
+
+<script src="examine-headers.js"></script>
