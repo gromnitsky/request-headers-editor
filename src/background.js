@@ -56,7 +56,7 @@ function hooks_add(listener) {
     if (!listener.urls.length) return
 
     let opt = ["blocking", "requestHeaders"]
-    if (!is_firefox) opt.push("extraHeaders")
+    if (!is_firefox()) opt.push("extraHeaders")
 
     chrome.webRequest.onBeforeSendHeaders
         .addListener(listener.callback.headers, { urls: listener.urls }, opt)
