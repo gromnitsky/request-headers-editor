@@ -8,7 +8,6 @@
         "open_in_tab": true
     },
     "permissions": [
-	"tabs",
 	"storage",
         "webRequest",
         "webRequestBlocking",
