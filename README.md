@@ -13,12 +13,12 @@ After installing the extension, visit [a test page][].
 
 An options page is actually a simple ini-config editor:
 
-![](https://ultraimg.com/images/2020/03/01/42K4.png)
+![](https://sigwait.tk/~alex/mm/Request-Headers-Editor-0.0.5.png)
 
 ## Compilation
 
 ~~~
-$ npm -g i json adieu browserify
+$ npm -g i json adieu browserify crx3-utils
 $ npm i
 $ make crx
 ~~~
